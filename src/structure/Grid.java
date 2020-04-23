@@ -269,11 +269,13 @@ public class Grid {
         return true;
     }
 
-    public int getGroupCount(){
+    public int getGroupsCount(){
         return groups.size();
     }
 
     public List<Group> getGroupsCopy(){
         return StreamHelper.getCopy(groups.keySet());
     }
+
+    public int getGroupCellCount(Group group){return groups.get(group).size();}
 }

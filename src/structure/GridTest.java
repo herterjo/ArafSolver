@@ -84,14 +84,14 @@ class GridTest {
         var validation = grid.isAllCellsInGroups();
         assertFalse(validation.getKey());
         assertEquals(validation.getValue().size(), lenX * lenY);
-        assertEquals(0, grid.getGroupCount());
+        assertEquals(0, grid.getGroupsCount());
         var group1 = getGroup1();
         var group2 = getGroup2();
         grid.setCellGroup(0, 0, group1);
         validation = grid.isAllCellsInGroups();
         assertFalse(validation.getKey());
         assertEquals(lenX * lenY - 1, validation.getValue().size());
-        assertEquals(1, grid.getGroupCount());
+        assertEquals(1, grid.getGroupsCount());
         grid.setCellGroup(0, 1, group1);
         grid.setCellGroup(0, 2, group1);
         grid.setCellGroup(1, 0, group1);
@@ -128,12 +128,12 @@ class GridTest {
         assertDoesNotThrow(() -> grid.setCellGroup(0, 0, g1));
         assertDoesNotThrow(() -> grid.setCellGroup(0, 1, g1));
         assertDoesNotThrow(() -> grid.setCellGroup(1, 1, g1));
-        assertEquals(1, grid.getGroupCount());
+        assertEquals(1, grid.getGroupsCount());
         assertThrows(IllegalArgumentException.class, () -> grid.deleteCellFromGroup(0, 1));
         assertDoesNotThrow(() -> grid.deleteCellFromGroup(1, 1));
         assertDoesNotThrow(() -> grid.deleteCellFromGroup(0, 1));
         assertThrows(IllegalArgumentException.class, () -> grid.setCellGroup(1, 1, g1));
-        assertEquals(1, grid.getGroupCount());
+        assertEquals(1, grid.getGroupsCount());
     }
 
     @Test

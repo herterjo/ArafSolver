@@ -2,6 +2,7 @@ package solver;
 
 
 import dataHelper.Point;
+import dataHelper.Tuple;
 
 import java.security.cert.CollectionCertStoreParameters;
 import java.util.LinkedList;
@@ -10,30 +11,30 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Stack {
-    private final LinkedList<StackEntry> entries;
+    private final LinkedList<Tuple<StackEntry, StepType>> entries;
 
     public Stack() {
         entries = new LinkedList<>();
     }
 
-    public void push(List<Point> possibilities, ReverseFunc r) {
+    public void push(List<Point> possibilities, ReverseFunc r, StepType stepType) {
         var map = possibilities.stream().collect(Collectors.toMap(p -> p, p->r));
-        push(map, possibilities);
+        push(map, possibilities, stepType);
     }
 
-    public void push(Map<Point, ReverseFunc> possibilities, List<Point> order) {
+    public void push(Map<Point, ReverseFunc> possibilities, List<Point> order, StepType stepType) {
         var entry = new StackEntry(possibilities, order);
-        push(entry);
+        push(entry, stepType);
     }
 
-    public void push(StackEntry entry) {
+    public void push(StackEntry entry, StepType stepType) {
         if (entry == null) {
             throw new IllegalArgumentException("Entry can't be null");
         }
         if (entry.size() < 1) {
             throw new IllegalArgumentException("Entry is empty");
         }
-        entries.push(entry);
+        entries.push(new Tuple<>(entry, stepType));
     }
 
     public int size() {
@@ -44,17 +45,17 @@ public class Stack {
         if (size() < 1) {
             return null;
         }
-        return entries.getFirst().pop();
+        return entries.getFirst().getKey().pop();
     }
 
-    public boolean popEntry() {
-        if (entries.getFirst().size() > 0) {
+    public StepType popEntry() {
+        if (entries.getFirst().getKey().size() > 0) {
             throw new IllegalStateException("There are left possibilities in the current stack entry");
         }
         if(entries.size() < 1){
-            return false;
+            return null;
         }
         entries.pop();
-        return true;
+        return entries.getFirst().getValue();
     }
 }
