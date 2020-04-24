@@ -85,10 +85,10 @@ public class Grid {
         if (oldGroup == null) {
             return;
         }
-        var adjacentPoints = getAdjacentPoints(posX, posY, oldGroup, true, false);
+        var adjacentPoints = getAdjacentPoints(posX, posY, oldGroup, false, false);
         if (adjacentPoints.size() > 1) {
             for (var adPoint : adjacentPoints) {
-                if (getAdjacentPoints(adPoint.getX(), adPoint.getX(), oldGroup, true, false)
+                if (getAdjacentPoints(adPoint.getX(), adPoint.getY(), oldGroup, false, false)
                         .size() < 2) {
                     throw new IllegalArgumentException("The adjacent cell " + adPoint + " would be cut off");
                 }

@@ -12,30 +12,30 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Stack {
-    private final LinkedList<Tuple<StackEntry, StepType>> entries;
+    private final LinkedList<StackEntry> entries;
 
     public Stack() {
         entries = new LinkedList<>();
     }
 
-    public void push(List<Point> possibilities, ReverseFunc r, StepType stepType) {
+    public void push(List<Point> possibilities, ReverseFunc r, StepType stepType, Point origin, Point target) {
         var map = possibilities.stream().collect(Collectors.toMap(p -> p, p->r));
-        push(map, possibilities, stepType);
+        push(map, possibilities, stepType, origin, target);
     }
 
-    public void push(Map<Point, ReverseFunc> possibilities, List<Point> order, StepType stepType) {
-        var entry = new StackEntry(possibilities, order);
-        push(entry, stepType);
+    public void push(Map<Point, ReverseFunc> possibilities, List<Point> order, StepType stepType, Point origin, Point target) {
+        var entry = new StackEntry(possibilities, order, stepType, origin, target);
+        push(entry);;
     }
 
-    public void push(StackEntry entry, StepType stepType) {
+    public void push(StackEntry entry) {
         if (entry == null) {
             throw new IllegalArgumentException("Entry can't be null");
         }
         if (entry.size() < 1) {
             throw new IllegalArgumentException("Entry is empty");
         }
-        entries.push(new Tuple<>(entry, stepType));
+        entries.push(entry);
     }
 
     public int size() {
@@ -46,11 +46,11 @@ public class Stack {
         if (size() < 1) {
             return null;
         }
-        return entries.getFirst().getKey().pop();
+        return entries.getFirst().pop();
     }
 
-    public StepType popEntry() {
-        if (entries.getFirst().getKey().size() > 0) {
+    public EntryContainer popEntry() {
+        if (entries.getFirst().size() > 0) {
             throw new IllegalGridStateException("There are left possibilities in the current stack entry");
         }
         if(size() < 1){
@@ -60,6 +60,7 @@ public class Stack {
         if(size() < 1){
             return null;
         }
-        return entries.getFirst().getValue();
+        var nextEntry = entries.getFirst();
+        return new EntryContainer(nextEntry.getStepType(), nextEntry.getOrigin(), nextEntry.getTarget());
     }
 }

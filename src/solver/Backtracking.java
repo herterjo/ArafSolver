@@ -20,7 +20,7 @@ public class Backtracking {
     private Point originNumPoint;
     private final Stack stack;
     private final ReverseFunc deleteGroupFromCellFunc;
-    private final List<Cell> numberCells;
+    private final List<Point> numberPoints;
     private StepType stepType;
     private final int neededGroupsCount;
 
@@ -36,9 +36,10 @@ public class Backtracking {
         stepType = StepType.AddGroup;
 
         var cells = grid.getFlatCellsCopy();
-        this.numberCells = StreamHelper.getNumberCells(cells);
+        var numberCells = StreamHelper.getNumberCells(cells);
         numberCells.sort(Comparator.comparing(Cell::getNumber));
-        var numCellCount = numberCells.size();
+        numberPoints = StreamHelper.getPoints(numberCells);
+        var numCellCount = numberPoints.size();
         if (numCellCount % 2 != 0) {
             throw new IllegalArgumentException("grid can not be solved, has numberCell count not divisible by two");
         }
@@ -66,20 +67,18 @@ public class Backtracking {
     }
 
     private boolean pushNewGroupPossibilities() {
-        var numberPoints = numberCells.stream().filter(c -> !c.isGroupCell()).map(Cell::getPos).collect(Collectors.toList());
-        if (numberPoints.size() < 1) {
+        var validNumberPoints = this.numberPoints.stream().filter(p -> !grid.getCellCopy(p).isGroupCell())
+                .collect(Collectors.toList());
+        if (validNumberPoints.size() < 1) {
             return false;
         }
-        pushOnStack(numberPoints, p -> {
-            grid.deleteCellFromGroup(p);
-            numberCells.add(0, grid.getCellCopy(p));
-        }, StepType.AddGroup);
+        pushOnStack(validNumberPoints, deleteGroupFromCellFunc, StepType.AddGroup);
         return true;
     }
 
     private void pushOnStack(List<Point> p, ReverseFunc f, StepType s) {
         stepType = s;
-        stack.push(p, f, s);
+        stack.push(p, f, s, originNumPoint, targetNumPoint);
     }
 
     public boolean Step() {
@@ -90,18 +89,24 @@ public class Backtracking {
             if (stack.size() < 1) {
                 throw new IllegalGridStateException("grid can't be solved");
             }
-            this.stepType = stack.popEntry();
+            var lastVars = stack.popEntry();
+            this.stepType = lastVars.getStepType();
+            this.originNumPoint = lastVars.getOrigin();
+            this.targetNumPoint = lastVars.getTarget();
             poppedPossibility = stack.popPossibility();
         }
 
         var solvedPartially = false;
-        //TODO: Switch
-        if (stepType == StepType.AddGroup) {
-            solvedPartially = addGroup(poppedPossibility);
-        } else if (stepType == StepType.FillMin) {
-            solvedPartially = fillMin(poppedPossibility);
-        } else if (stepType == StepType.FillMax) {
-            solvedPartially = fillMax(poppedPossibility);
+        switch (stepType) {
+            case AddGroup:
+                solvedPartially = addGroup(poppedPossibility);
+                break;
+            case FillMin:
+                solvedPartially = fillMin(poppedPossibility);
+                break;
+            case FillMax:
+                solvedPartially = fillMax(poppedPossibility);
+                break;
         }
 
         return solvedPartially && grid.isAllCellsInGroups().getKey() && grid.validateAll();
@@ -129,7 +134,8 @@ public class Backtracking {
 //        if (neededGroupsCount == groupCount) {
 //            return true;
 //        }
-        if (grid.getCellCopy(possibility).getGroup() != null) {
+        var oldPosCell = grid.getCellCopy(possibility);
+        if (oldPosCell.getGroup() != null) {
             return Step();
         }
 
@@ -141,7 +147,10 @@ public class Backtracking {
             group = new Group(groupColor);
         } while (groups.contains(group));
         var posCell = grid.getCellCopy(possibility);
-        var newTargetCell = numberCells.stream().filter(c -> isReachableManhatten(c, posCell))
+        var newTargetCell = numberPoints.stream().map(grid::getCellCopy)
+                .filter(c -> isReachableManhatten(c, posCell)
+                        && !c.isGroupCell()
+                        && !c.getPos().equals(possibility))
                 .findFirst().orElse(null);
         // if no matching target
         if (newTargetCell == null) {
@@ -151,12 +160,10 @@ public class Backtracking {
         originNumPoint = possibility;
         targetNumPoint = newTargetCell.getPos();
         var newOriginCell = grid.getCellCopy(originNumPoint);
-        numberCells.remove(newOriginCell);
-        originNumPoint = possibility;
-        return pushAdjacentCells(newOriginCell);
+        return pushNextCells(newOriginCell);
     }
 
-    private boolean pushAdjacentCells(Cell currentCell) {
+    private boolean pushNextCells(Cell currentCell) {
         var currentPos = currentCell.getPos();
 //        if((targetNumCell == null || originNumCell == null) && currentCell.getGroup() == null){
 //            grid.getAdjacentPoints(currentPos, null, )
@@ -169,22 +176,25 @@ public class Backtracking {
         var min = Math.min(targetNumCell.getNumber(), originNumCell.getNumber());
         var groupCellCount = grid.getGroupCellCount(oGroup);
         var groupCount = grid.getGroupsCount();
-        if (groupCellCount <= min
-                && !grid.isNumberCellCountValid(oGroup).getKey()
-                && !grid.isGroupCellNumberValid(oGroup).getKey()) {
+        var ncc = grid.isNumberCellCountValid(oGroup).getKey();
+        if (groupCellCount <= min || !ncc || !grid.isGroupCellNumberValid(oGroup).getKey()) {
             var targetPos = targetNumCell.getPos();
             if (groupCellCount >= max) {
                 return false;
             }
             List<Point> nextPossibilities;
-            if (getDistMahatten(currentPos, targetPos) < 3) {
+            if (grid.getCellCopy(targetPos).getGroup() == null
+                    && getDistMahatten(currentPos, targetPos) < 3) {
                 nextPossibilities = new ArrayList<>(Collections.singletonList(targetPos));
-            } else {
+            } else if (!ncc) {
                 //TODO: Sort for A*
                 //TODO: Flood Fill Algorithm
                 nextPossibilities = grid.getAdjacentPoints(currentPos, null, true, true);
+            } else {
+                nextPossibilities = grid.getCellsInGroup(oGroup).stream()
+                        .flatMap(c -> grid.getAdjacentPoints(c.getPos(), null, true, true).stream())
+                        .distinct().collect(Collectors.toList());
             }
-            //TODO: Change for: if both number cells are in the group, push all adjacent cells for group
             //if there are no next possibilities,
             if (nextPossibilities.size() > 0) {
                 pushOnStack(nextPossibilities, deleteGroupFromCellFunc, StepType.FillMin);
@@ -202,6 +212,7 @@ public class Backtracking {
 //            }
 //            return false;
         } else {
+            //TODO: Better finding of cells, no loop
             var allCellsInGroupsV = grid.isAllCellsInGroups();
             if (allCellsInGroupsV.getKey()) {
                 return true;
@@ -264,7 +275,7 @@ public class Backtracking {
         }
         var originCell = grid.getCellCopy(originNumPoint);
         grid.setCellGroup(possibility, originCell.getGroup());
-        return pushAdjacentCells(originCell);
+        return pushNextCells(originCell);
     }
 
     private boolean fillMin(Point possibility) {
@@ -279,7 +290,7 @@ public class Backtracking {
         var oGroup = originCell.getGroup();
         grid.setCellGroup(possibility, oGroup);
         var posCell = grid.getCellCopy(possibility);
-        return pushAdjacentCells(posCell);
+        return pushNextCells(posCell);
         // possibility was invalid
         // }
     }

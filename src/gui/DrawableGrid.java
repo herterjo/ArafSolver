@@ -57,6 +57,12 @@ public class DrawableGrid extends Grid {
     }
 
     @Override
+    public void setCellGroup(Point p, structure.Group group) {
+        super.setCellGroup(p, group);
+        update(p.getX(), p.getY(), group.getId());
+    }
+
+    @Override
     public void deleteCellFromGroup(Point p) {
         super.deleteCellFromGroup(p);
         update(p.getX(), p.getY(), null);

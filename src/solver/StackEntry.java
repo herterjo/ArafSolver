@@ -12,8 +12,15 @@ public class StackEntry {
     private Tuple<Point, ReverseFunc> lastPoppedReverse;
     private final List<Point> order;
     private final static ReverseFunc nop = p -> {};
+    private final StepType stepType;
+    private final Point origin;
+    private final Point target;
 
-    public StackEntry(Map<Point, ReverseFunc> possibilities, List<Point> order) {
+    public StackEntry(Map<Point, ReverseFunc> possibilities, List<Point> order,
+                      StepType stepType, Point origin, Point target) {
+        this.stepType = stepType;
+        this.origin = origin;
+        this.target = target;
         List<Point> keys = new LinkedList<>(possibilities.keySet());
         var keyNull = StreamHelper.hasNull(keys);
         var funcNull = StreamHelper.hasNull(new ArrayList<>(possibilities.values()));
@@ -30,6 +37,18 @@ public class StackEntry {
             order.addAll(keys);
             this.order = new LinkedList<>(order);
         }
+    }
+
+    public StepType getStepType() {
+        return stepType;
+    }
+
+    public Point getOrigin() {
+        return origin;
+    }
+
+    public Point getTarget() {
+        return target;
     }
 
     public int size() {
