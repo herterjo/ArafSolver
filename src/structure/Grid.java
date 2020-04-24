@@ -278,4 +278,8 @@ public class Grid {
     }
 
     public int getGroupCellCount(Group group){return groups.get(group).size();}
+
+    public List<Cell> getCellsInGroup(Group g){
+        return StreamHelper.getCopy(groups.get(g));
+    }
 }

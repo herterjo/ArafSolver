@@ -11,6 +11,7 @@ public class StackEntry {
     private final Map<Point, ReverseFunc> possibilities;
     private Tuple<Point, ReverseFunc> lastPoppedReverse;
     private final List<Point> order;
+    private final static ReverseFunc nop = p -> {};
 
     public StackEntry(Map<Point, ReverseFunc> possibilities, List<Point> order) {
         List<Point> keys = new LinkedList<>(possibilities.keySet());
@@ -21,8 +22,7 @@ public class StackEntry {
         }
         //Maybe a copy of indiviual object is needed
         this.possibilities = new HashMap<>(possibilities);
-        lastPoppedReverse = new Tuple<>(null, (p) -> {
-        });
+        lastPoppedReverse = new Tuple<>(null, nop);
         if(order == null){
             this.order = keys;
         }else{
@@ -49,5 +49,9 @@ public class StackEntry {
         var value = possibilities.remove(key);
         lastPoppedReverse = new Tuple<>(key, value);
         return key;
+    }
+
+    public static ReverseFunc getNop() {
+        return nop;
     }
 }
