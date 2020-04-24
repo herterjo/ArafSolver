@@ -1,6 +1,8 @@
 package decoder;
 
 import com.google.gson.Gson;
+import gui.DrawableGrid;
+import javafx.stage.Stage;
 import structure.Grid;
 
 import java.io.File;
@@ -19,6 +21,22 @@ public abstract class GridDecoder {
         File file = new File(filepath);
         var myReader = new FileReader(file);
         var grid = getJsonGrid(myReader);
+        myReader.close();
+        return grid;
+    }
+
+    public static DrawableGrid getJsonDrawableGrid(Reader jsonReader, Stage stage, int timeout) {
+        Gson gson = new Gson();
+        var jsonGrid = gson.fromJson(jsonReader, JsonGrid.class);
+        var grid =  jsonGrid.getDrawableGrid(stage, timeout);
+        grid.init();
+        return grid;
+    }
+
+    public static DrawableGrid getJsonDrawableGridFromFile(String filepath, Stage stage, int timeout) throws IOException {
+        File file = new File(filepath);
+        var myReader = new FileReader(file);
+        var grid = getJsonDrawableGrid(myReader, stage, timeout);
         myReader.close();
         return grid;
     }

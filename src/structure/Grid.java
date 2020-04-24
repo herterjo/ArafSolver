@@ -1,5 +1,6 @@
 package structure;
 
+import dataHelper.IllegalGridStateException;
 import dataHelper.Point;
 import dataHelper.Tuple;
 
@@ -7,7 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Grid {
-    public static final int numberCellsInGroup = 2;
+    protected static final int numberCellsInGroup = 2;
     protected static final List<Point> searchPattern = Arrays.asList(
             new Point(1, 0),
             new Point(-1, 0),
@@ -134,7 +135,7 @@ public class Grid {
         return cellscpy;
     }
 
-    private Cell getCell(int posX, int posY) {
+    protected Cell getCell(int posX, int posY) {
         if (isIndexInValid(posX, posY)) {
             throw new IllegalArgumentException("Position (" + posX + "," + posY + ") is invalid");
         }
@@ -234,7 +235,7 @@ public class Grid {
     public Tuple<Boolean, Integer> isGroupCellNumberValid(Group group) {
         var numCellsValid = isNumberCellCountValid(group);
         if (!numCellsValid.getKey()) {
-            throw new IllegalStateException("NumberCellsCount is not valid for this group, you have to check this first");
+            throw new IllegalGridStateException("NumberCellsCount is not valid for this group, you have to check this first");
         }
         var cells = groups.get(group);
         var minMaxNumbers = StreamHelper.getMinMaxNumbers(cells);
@@ -254,7 +255,7 @@ public class Grid {
     public boolean validateAll() {
         var validResultCells = isAllCellsInGroups();
         if (!validResultCells.getKey()) {
-            throw new IllegalStateException("Not all cells are in a group");
+            throw new IllegalGridStateException("Not all cells are in a group");
         }
         for (Group group : groups.keySet()) {
             var numberValid = isNumberCellCountValid(group);

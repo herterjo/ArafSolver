@@ -1,4 +1,4 @@
-package gui;
+package dataHelper;
 
 import dataHelper.ColorHelper;
 import org.junit.jupiter.api.Test;

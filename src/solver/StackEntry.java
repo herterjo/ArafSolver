@@ -41,11 +41,10 @@ public class StackEntry {
         var lastPoppedFunc = lastPoppedReverse.getValue();
         lastPoppedFunc.execute(lastPoppedPoint);
         if (this.size() < 1) {
-            lastPoppedReverse = new Tuple<>(null, (p) -> {
-            });
+            lastPoppedReverse = new Tuple<>(null, nop);
             return null;
         }
-        var key = order.get(0);
+        var key = order.remove(0);
         var value = possibilities.remove(key);
         lastPoppedReverse = new Tuple<>(key, value);
         return key;

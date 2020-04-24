@@ -1,7 +1,10 @@
 package decoder;
 
+import dataHelper.IllegalGridStateException;
 import dataHelper.Point;
 import dataHelper.Tuple;
+import gui.DrawableGrid;
+import javafx.stage.Stage;
 import structure.Grid;
 
 import java.util.LinkedList;
@@ -19,9 +22,17 @@ public class JsonGrid {
         lenY = 0;
     }
 
-    public Grid getGrid() {
+    public Grid getGrid(){
+        return getGrid(Grid::new);
+    }
+
+    public DrawableGrid getDrawableGrid(Stage stage, int timout){
+        return (DrawableGrid) getGrid((x,y) -> new DrawableGrid(x,y, stage, timout));
+    }
+
+    private Grid getGrid(GridConstructor gc) {
         if (lenX < 1 || lenY < 1) {
-            throw new IllegalStateException("Length can't be less than 1, is " + lenX + " and " + lenY);
+            throw new IllegalGridStateException("Length can't be less than 1, is " + lenX + " and " + lenY);
         }
         var nCellsCpy = numberCells.stream()
                 .map(c -> c == null ? null : new Tuple<>(c.getKey() == null ? null : c.getKey().copy(), c.getValue()))
@@ -29,20 +40,20 @@ public class JsonGrid {
         //gson interpretes trailing comma in json list as null
         nCellsCpy.remove(null);
         if (nCellsCpy.size() % 2 != 0) {
-            throw new IllegalStateException("NumberCells are not divisible by two");
+            throw new IllegalGridStateException("NumberCells are not divisible by two");
         }
         var distinctCount = nCellsCpy.stream().map(Tuple::getKey).distinct().count();
         if (distinctCount != nCellsCpy.size()) {
-            throw new IllegalStateException("There are multiple entries for the same position");
+            throw new IllegalGridStateException("There are multiple entries for the same position");
         }
-        var grid = new Grid(lenX, lenY);
+        var grid = gc.run(lenX, lenY);
         for (var pointNumber : nCellsCpy) {
             var cellPos = pointNumber.getKey();
             var number = pointNumber.getValue();
             var x = cellPos.getX();
             var y = cellPos.getY();
             if (x >= lenX || y >= lenY) {
-                throw new IllegalStateException("Position (" + x + "," + y + ") is out of index," +
+                throw new IllegalGridStateException("Position (" + x + "," + y + ") is out of index," +
                         " length is " + lenX + " and " + lenY);
             }
             grid.setNumberCell(x, y, number);

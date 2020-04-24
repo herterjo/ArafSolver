@@ -1,5 +1,6 @@
 package decoder;
 
+import dataHelper.IllegalGridStateException;
 import org.junit.jupiter.api.Test;
 import structure.Group;
 
@@ -31,7 +32,7 @@ class GridDecoderTest {
         grid.setCellGroup(1, 1, g1);
         grid.setCellGroup(1, 0, g1);
         assertDoesNotThrow(grid::validateAll);
-        var stateExClass = IllegalStateException.class;
+        var stateExClass = IllegalGridStateException.class;
         //Multiple entries for same coord
         assertThrows(stateExClass, () -> GridDecoder.getJsonGrid(new StringReader("{\"numberCells\":[" +
                 "{\"key\":{\"y\":0,\"x\":0},\"value\":2}," +

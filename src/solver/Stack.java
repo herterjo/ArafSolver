@@ -1,6 +1,7 @@
 package solver;
 
 
+import dataHelper.IllegalGridStateException;
 import dataHelper.Point;
 import dataHelper.Tuple;
 
@@ -50,12 +51,15 @@ public class Stack {
 
     public StepType popEntry() {
         if (entries.getFirst().getKey().size() > 0) {
-            throw new IllegalStateException("There are left possibilities in the current stack entry");
+            throw new IllegalGridStateException("There are left possibilities in the current stack entry");
         }
-        if(entries.size() < 1){
+        if(size() < 1){
             return null;
         }
         entries.pop();
+        if(size() < 1){
+            return null;
+        }
         return entries.getFirst().getValue();
     }
 }

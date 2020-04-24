@@ -84,8 +84,8 @@ public class Cell implements ICopyable<Cell> {
         Cell cell = (Cell) o;
         return posX == cell.posX &&
                 posY == cell.posY &&
-                group.equals(cell.group) &&
-                number.equals(cell.number);
+                Objects.equals(group, cell.group) &&
+                Objects.equals(number, cell.number);
     }
 
     @Override
