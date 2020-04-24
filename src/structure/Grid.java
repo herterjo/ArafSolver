@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Grid {
+    //TODO: Hashcode
     protected static final int numberCellsInGroup = 2;
     protected static final List<Point> searchPattern = Arrays.asList(
             new Point(1, 0),

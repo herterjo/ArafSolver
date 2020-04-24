@@ -85,6 +85,7 @@ public class Backtracking {
     public boolean Step() {
         var poppedPossibility = stack.popPossibility();
         //backtrack
+        //TODO: if the grid- and possibilities-Hashcode is repeated -> skip
         while (poppedPossibility == null) {
             if (stack.size() < 1) {
                 throw new IllegalGridStateException("grid can't be solved");
@@ -168,7 +169,9 @@ public class Backtracking {
         var min = Math.min(targetNumCell.getNumber(), originNumCell.getNumber());
         var groupCellCount = grid.getGroupCellCount(oGroup);
         var groupCount = grid.getGroupsCount();
-        if (groupCellCount <= min && !grid.isNumberCellCountValid(oGroup).getKey()) {
+        if (groupCellCount <= min
+                && !grid.isNumberCellCountValid(oGroup).getKey()
+                && !grid.isGroupCellNumberValid(oGroup).getKey()) {
             var targetPos = targetNumCell.getPos();
             if (groupCellCount >= max) {
                 return false;
@@ -181,6 +184,7 @@ public class Backtracking {
                 //TODO: Flood Fill Algorithm
                 nextPossibilities = grid.getAdjacentPoints(currentPos, null, true, true);
             }
+            //TODO: Change for: if both number cells are in the group, push all adjacent cells for group
             //if there are no next possibilities,
             if (nextPossibilities.size() > 0) {
                 pushOnStack(nextPossibilities, deleteGroupFromCellFunc, StepType.FillMin);
