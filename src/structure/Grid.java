@@ -50,6 +50,17 @@ public class Grid {
         getCell(posX, posY).setNumber(number);
     }
 
+    protected Cell getCell(int posX, int posY) {
+        if (isIndexInValid(posX, posY)) {
+            throw new IllegalArgumentException("Position (" + posX + "," + posY + ") is invalid");
+        }
+        return this.cells.get(posY).get(posX);
+    }
+
+    public boolean isIndexInValid(int posX, int posY) {
+        return posX < 0 || posY < 0 || posX >= lenX || posY >= lenY;
+    }
+
     public void deleteNumberCell(int posX, int posY) {
         getCell(posX, posY).deleteNumber();
     }
@@ -120,14 +131,26 @@ public class Grid {
         }
     }
 
-    public Tuple<Boolean, List<Point>> isAllCellsInGroups() {
-        var cells = getFlatCellsCopy();
-        var notInGroups = StreamHelper.getNotInGroups(cells);
-        if (notInGroups.size() > 0) {
-            var mapped = StreamHelper.getPoints(notInGroups);
-            return new Tuple<>(false, mapped);
+    public List<Point> getAdjacentPoints(int posX, int posY, Group g, boolean noGroup, boolean noNumber) {
+        var adCells = searchPattern.stream().map(p -> {
+            var newX = posX + p.getX();
+            var newY = posY + p.getY();
+            if (isIndexInValid(newX, newY)) {
+                return null;
+            }
+            return getCell(newX, newY);
+        }).filter(Objects::nonNull);
+
+        if (g != null) {
+            adCells = adCells.filter(c -> c.getGroup() != null && c.getGroup().equals(g));
+        } else if (noGroup) {
+            adCells = adCells.filter(c -> !c.isGroupCell());
         }
-        return new Tuple<>(true, null);
+
+        if (noNumber) {
+            adCells = adCells.filter(c -> !c.isNumberCell());
+        }
+        return adCells.map(Cell::getPos).collect(Collectors.toList());
     }
 
     public Map<Group, List<Cell>> getGroupMapCopy() {
@@ -153,31 +176,20 @@ public class Grid {
         return cellscpy;
     }
 
-    protected Cell getCell(int posX, int posY) {
-        if (isIndexInValid(posX, posY)) {
-            throw new IllegalArgumentException("Position (" + posX + "," + posY + ") is invalid");
-        }
-        return this.cells.get(posY).get(posX);
+    public Cell getCellCopy(Point p) {
+        return getCellCopy(p.getX(), p.getY());
     }
 
     public Cell getCellCopy(int posX, int posY) {
         return this.getCell(posX, posY).copy();
     }
 
-    public Cell getCellCopy(Point p) {
-        return getCellCopy(p.getX(), p.getY());
-    }
-
-    public List<Cell> getFlatCellsCopy() {
-        return StreamHelper.getFlatCopy(cells);
-    }
-
-    public boolean isIndexInValid(int posX, int posY) {
-        return posX < 0 || posY < 0 || posX >= lenX || posY >= lenY;
-    }
-
     public List<Point> getAdjacentPoints(Point p, Group g, boolean noGroup, boolean noNumber) {
         return getAdjacentPoints(p.getX(), p.getY(), g, noGroup, noNumber);
+    }
+
+    public boolean hasAdjacentGroupCell(int posX, int posY, Group group) {
+        return getAdjacentPoints(posX, posY, group, true, false).size() > 0;
     }
 
 //    //Debug variant
@@ -207,35 +219,32 @@ public class Grid {
 //        return tmp.stream().map(Cell::getPos).collect(Collectors.toList());
 //    }
 
-    public List<Point> getAdjacentPoints(int posX, int posY, Group g, boolean noGroup, boolean noNumber) {
-        var adCells = searchPattern.stream().map(p -> {
-            var newX = posX + p.getX();
-            var newY = posY + p.getY();
-            if (isIndexInValid(newX, newY)) {
-                return null;
+    public boolean validateAll() {
+        var validResultCells = isAllCellsInGroups();
+        if (!validResultCells.getKey()) {
+            throw new IllegalGridStateException("Not all cells are in a group");
+        }
+        for (Group group : groups.keySet()) {
+            var numberValid = isNumberCellCountValid(group);
+            if (!numberValid.getKey()) {
+                return false;
             }
-            return getCell(newX, newY);
-        }).filter(Objects::nonNull);
-
-        if (g != null) {
-            adCells = adCells.filter(c -> c.getGroup() != null && c.getGroup().equals(g));
-        } else if (noGroup) {
-            adCells = adCells.filter(c -> !c.isGroupCell());
+            var countValid = isGroupCellNumberValid(group);
+            if (!countValid.getKey()) {
+                return false;
+            }
         }
-
-        if (noNumber) {
-            adCells = adCells.filter(c -> !c.isNumberCell());
-        }
-        return adCells.map(Cell::getPos).collect(Collectors.toList());
+        return true;
     }
 
-    public boolean hasAdjacentGroupCell(int posX, int posY, Group group) {
-        return getAdjacentPoints(posX, posY, group, true, false).size() > 0;
-    }
-
-    @Override
-    public String toString() {
-        return lenX + "*" + lenY + ": " + cells;
+    public Tuple<Boolean, List<Point>> isAllCellsInGroups() {
+        var cells = getFlatCellsCopy();
+        var notInGroups = StreamHelper.getNotInGroups(cells);
+        if (notInGroups.size() > 0) {
+            var mapped = StreamHelper.getPoints(notInGroups);
+            return new Tuple<>(false, mapped);
+        }
+        return new Tuple<>(true, null);
     }
 
     public Tuple<Boolean, Integer> isNumberCellCountValid(Group group) {
@@ -248,7 +257,6 @@ public class Grid {
         }
         return new Tuple<>(true, null);
     }
-
 
     public Tuple<Boolean, Integer> isGroupCellNumberValid(Group group) {
         var numCellsValid = isNumberCellCountValid(group);
@@ -270,22 +278,8 @@ public class Grid {
         return new Tuple<>(true, null);
     }
 
-    public boolean validateAll() {
-        var validResultCells = isAllCellsInGroups();
-        if (!validResultCells.getKey()) {
-            throw new IllegalGridStateException("Not all cells are in a group");
-        }
-        for (Group group : groups.keySet()) {
-            var numberValid = isNumberCellCountValid(group);
-            if (!numberValid.getKey()) {
-                return false;
-            }
-            var countValid = isGroupCellNumberValid(group);
-            if (!countValid.getKey()) {
-                return false;
-            }
-        }
-        return true;
+    public List<Cell> getFlatCellsCopy() {
+        return StreamHelper.getFlatCopy(cells);
     }
 
     public int getGroupsCount() {
@@ -313,8 +307,21 @@ public class Grid {
     }
 
     @Override
-    public int hashCode() {
-        return cells.hashCode();
+    public String toString() {
+        return lenX + "*" + lenY + ": " + cells;
+    }
+
+    public int getStatusCode() {
+        var i = 0;
+        var list = new LinkedList<Tuple<Integer, List<Point>>>();
+        for (List<Cell> cells : groups.values()) {
+            var innerList = StreamHelper.getPoints(cells);
+            innerList.sort(Comparator.comparing(p -> lenX * p.getY() + p.getX()));
+            list.add(new Tuple<>(i, innerList));
+            i++;
+        }
+        list.sort(Comparator.comparing(Tuple::getKey));
+        return Objects.hash(list);
     }
 
     public boolean isFloodFillAcceptable(Point p, Integer maxFloodedAcceptable, Point exclude, boolean checkOtherNumsMax) {

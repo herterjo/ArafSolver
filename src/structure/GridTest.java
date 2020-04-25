@@ -12,49 +12,6 @@ class GridTest {
     public static final int gridLenX = 3;
     public static final int gridLenY = 4;
 
-    public static Grid getGroupGrid() {
-        var grid = new Grid(gridLenX, gridLenY);
-        var group1 = getGroup1();
-        var group2 = getGroup2();
-        var group3 = getGroup3();
-        grid.setCellGroup(0, 0, group3);
-        grid.setCellGroup(0, 1, group1);
-        grid.setCellGroup(0, 2, group1);
-        grid.setCellGroup(0, 3, group1);
-        grid.setCellGroup(1, 0, group3);
-        grid.setCellGroup(1, 1, group2);
-        grid.setCellGroup(1, 2, group2);
-        grid.setCellGroup(1, 3, group1);
-        grid.setCellGroup(2, 0, group3);
-        grid.setCellGroup(2, 1, group2);
-        grid.setCellGroup(2, 2, group2);
-        grid.setCellGroup(2, 3, group1);
-        return grid;
-    }
-
-    public static Grid getValidGrid() {
-        var grid = getGroupGrid();
-        grid.setNumberCell(0, 0, 4);
-        grid.setNumberCell(2, 0, 2);
-        grid.setNumberCell(0, 1, 2);
-        grid.setNumberCell(0, 2, 7);
-        grid.setNumberCell(1, 1, 27);
-        grid.setNumberCell(1, 2, 2);
-        return grid;
-    }
-
-    public static Group getGroup1() {
-        return new Group(1);
-    }
-
-    public static Group getGroup2() {
-        return new Group(2);
-    }
-
-    public static Group getGroup3() {
-        return new Group(3);
-    }
-
     public static Grid getInValidGrid() {
         var grid = GridTest.getGroupGrid();
         grid.setNumberCell(0, 0, 2);
@@ -106,6 +63,14 @@ class GridTest {
         assertNull(validation.getValue());
     }
 
+    public static Group getGroup1() {
+        return new Group(1);
+    }
+
+    public static Group getGroup2() {
+        return new Group(2);
+    }
+
     @Test
     void groupCopyTest() {
         var grid = getValidGrid();
@@ -118,6 +83,41 @@ class GridTest {
         assertEquals(gr1Memebers.size(), grid.getGroupMapCopy().get(group1).size());
         grid.deleteCellFromGroup(0, 1);
         assertEquals(gr1Memebers.size() - 1, grid.getGroupMapCopy().get(group1).size());
+    }
+
+    public static Grid getValidGrid() {
+        var grid = getGroupGrid();
+        grid.setNumberCell(0, 0, 4);
+        grid.setNumberCell(2, 0, 2);
+        grid.setNumberCell(0, 1, 2);
+        grid.setNumberCell(0, 2, 7);
+        grid.setNumberCell(1, 1, 27);
+        grid.setNumberCell(1, 2, 2);
+        return grid;
+    }
+
+    public static Grid getGroupGrid() {
+        var grid = new Grid(gridLenX, gridLenY);
+        var group1 = getGroup1();
+        var group2 = getGroup2();
+        var group3 = getGroup3();
+        grid.setCellGroup(0, 0, group3);
+        grid.setCellGroup(0, 1, group1);
+        grid.setCellGroup(0, 2, group1);
+        grid.setCellGroup(0, 3, group1);
+        grid.setCellGroup(1, 0, group3);
+        grid.setCellGroup(1, 1, group2);
+        grid.setCellGroup(1, 2, group2);
+        grid.setCellGroup(1, 3, group1);
+        grid.setCellGroup(2, 0, group3);
+        grid.setCellGroup(2, 1, group2);
+        grid.setCellGroup(2, 2, group2);
+        grid.setCellGroup(2, 3, group1);
+        return grid;
+    }
+
+    public static Group getGroup3() {
+        return new Group(3);
     }
 
     @Test
@@ -171,14 +171,6 @@ class GridTest {
         assertFalseGrid(validGrid::isNumberCellCountValid);
     }
 
-    private void setAllNumbers(Grid validGrid, int number) {
-        for (int veri = 0; veri < GridTest.gridLenY; veri++) {
-            for (int hori = 0; hori < GridTest.gridLenX; hori++) {
-                validGrid.setNumberCell(hori, veri, number);
-            }
-        }
-    }
-
     private void assertTrueGrid(Function<Group, Tuple<Boolean, Integer>> expression) {
         var g1 = GridTest.getGroup1();
         var g2 = GridTest.getGroup2();
@@ -192,6 +184,14 @@ class GridTest {
         assertNull(v1.getValue());
         assertNull(v2.getValue());
         assertNull(v3.getValue());
+    }
+
+    private void setAllNumbers(Grid validGrid, int number) {
+        for (int veri = 0; veri < GridTest.gridLenY; veri++) {
+            for (int hori = 0; hori < GridTest.gridLenX; hori++) {
+                validGrid.setNumberCell(hori, veri, number);
+            }
+        }
     }
 
     private void assertFalseGrid(Function<Group, Tuple<Boolean, Integer>> expression) {
@@ -226,45 +226,48 @@ class GridTest {
     }
 
     @Test
-    void getAdjacentPoints(){
+    void getAdjacentPoints() {
         var grid = getValidGrid();
-        var aPoints = grid.getAdjacentPoints(1,0, null, false, false);
-        assertTrue(aPoints.contains(new Point(0,0)));
-        assertTrue(aPoints.contains(new Point(1,1)));
-        assertFalse(aPoints.contains(new Point(0,1)));
-        assertFalse(aPoints.contains(new Point(1,0)));
+        var aPoints = grid.getAdjacentPoints(1, 0, null, false, false);
+        assertTrue(aPoints.contains(new Point(0, 0)));
+        assertTrue(aPoints.contains(new Point(1, 1)));
+        assertFalse(aPoints.contains(new Point(0, 1)));
+        assertFalse(aPoints.contains(new Point(1, 0)));
 
-        grid.deleteNumberCell(0,0);
-        aPoints = grid.getAdjacentPoints(1,0, null, false, true);
-        assertTrue(aPoints.contains(new Point(0,0)));
-        assertFalse(aPoints.contains(new Point(1,1)));
+        grid.deleteNumberCell(0, 0);
+        aPoints = grid.getAdjacentPoints(1, 0, null, false, true);
+        assertTrue(aPoints.contains(new Point(0, 0)));
+        assertFalse(aPoints.contains(new Point(1, 1)));
 
-        grid.deleteCellFromGroup(1,1);
-        aPoints = grid.getAdjacentPoints(1,0, null, true, false);
-        assertFalse(aPoints.contains(new Point(0,0)));
-        assertTrue(aPoints.contains(new Point(1,1)));
+        grid.deleteCellFromGroup(1, 1);
+        aPoints = grid.getAdjacentPoints(1, 0, null, true, false);
+        assertFalse(aPoints.contains(new Point(0, 0)));
+        assertTrue(aPoints.contains(new Point(1, 1)));
 
-        grid.setCellGroup(1,1, new Group(1));
-        aPoints = grid.getAdjacentPoints(1,0, new Group(1), false, false);
-        assertFalse(aPoints.contains(new Point(0,0)));
-        assertTrue(aPoints.contains(new Point(1,1)));
+        grid.setCellGroup(1, 1, new Group(1));
+        aPoints = grid.getAdjacentPoints(1, 0, new Group(1), false, false);
+        assertFalse(aPoints.contains(new Point(0, 0)));
+        assertTrue(aPoints.contains(new Point(1, 1)));
     }
 
     @Test
-    void hashCodeTest(){
+    void getStatusCode() {
         var grid1 = getValidGrid();
         var grid2 = getValidGrid();
-        assertEquals(grid1.hashCode(), grid2.hashCode());
-        grid1.setCellGroup(0,0, new Group(6345));
-        assertNotEquals(grid1.hashCode(), grid2.hashCode());
-        grid1= getValidGrid();
-        grid1.setNumberCell(0,0,1234);
-        assertNotEquals(grid1.hashCode(), grid2.hashCode());
+        assertEquals(grid1.getStatusCode(), grid2.getStatusCode());
+        grid1.setCellGroup(0, 0, new Group(6345));
+        assertNotEquals(grid1.getStatusCode(), grid2.getStatusCode());
+        grid2.setCellGroup(0, 0, new Group(123434));
+        assertEquals(grid1.getStatusCode(), grid2.getStatusCode());
+        grid1 = getValidGrid();
+        grid2 = getValidGrid();
+        grid1.setNumberCell(0, 0, 1234);
+        assertEquals(grid1.getStatusCode(), grid2.getStatusCode());
     }
 
     @Test
-    void floodFill(){
-        var grid = new Grid(4,4);
+    void floodFill() {
+        var grid = new Grid(4, 4);
         var gr1 = getGroup1();
         var gr2 = getGroup2();
         grid.setCellGroup(2, 0, gr1);
@@ -272,17 +275,17 @@ class GridTest {
         grid.setCellGroup(2, 2, gr1);
         grid.setCellGroup(2, 3, gr1);
         grid.setCellGroup(0, 0, gr2);
-        assertTrue(grid.isFloodFillAcceptable(new Point(0,0), 6, new Point(0,1), true));
-        assertFalse(grid.isFloodFillAcceptable(new Point(0,0), 6, null, true));
-        assertFalse(grid.isFloodFillAcceptable(new Point(0,0), 5, new Point(0,1), true));
-        grid.deleteCellFromGroup(0,0);
-        grid.setNumberCell(0,2, 1);
-        grid.setNumberCell(0,1, 9);
-        assertTrue(grid.isFloodFillAcceptable(new Point(2,0), 4, null, true));
-        assertTrue(grid.isFloodFillAcceptable(new Point(2,0), 4, null, false));
-        grid.setNumberCell(0,2, 1);
-        grid.setNumberCell(0,1, 3);
-        assertFalse(grid.isFloodFillAcceptable(new Point(2,0), 4, null, true));
-        assertTrue(grid.isFloodFillAcceptable(new Point(2,0), 4, null, false));
+        assertTrue(grid.isFloodFillAcceptable(new Point(0, 0), 6, new Point(0, 1), true));
+        assertFalse(grid.isFloodFillAcceptable(new Point(0, 0), 6, null, true));
+        assertFalse(grid.isFloodFillAcceptable(new Point(0, 0), 5, new Point(0, 1), true));
+        grid.deleteCellFromGroup(0, 0);
+        grid.setNumberCell(0, 2, 1);
+        grid.setNumberCell(0, 1, 9);
+        assertTrue(grid.isFloodFillAcceptable(new Point(2, 0), 4, null, true));
+        assertTrue(grid.isFloodFillAcceptable(new Point(2, 0), 4, null, false));
+        grid.setNumberCell(0, 2, 1);
+        grid.setNumberCell(0, 1, 3);
+        assertFalse(grid.isFloodFillAcceptable(new Point(2, 0), 4, null, true));
+        assertTrue(grid.isFloodFillAcceptable(new Point(2, 0), 4, null, false));
     }
 }

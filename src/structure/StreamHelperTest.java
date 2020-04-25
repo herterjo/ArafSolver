@@ -11,18 +11,18 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StreamHelperTest {
+    @Test
+    void getNumberCells() {
+        var cells = getCells();
+        assertEquals(2, StreamHelper.getNumberCells(cells).size());
+    }
+
     private List<Cell> getCells() {
         var cells = new ArrayList<Cell>(3);
         cells.add(new Cell(0, 0, new Group(1), 2));
         cells.add(new Cell(1, 0, null, null));
         cells.add(new Cell(2, 2, null, 25));
         return cells;
-    }
-
-    @Test
-    void getNumberCells() {
-        var cells = getCells();
-        assertEquals(2, StreamHelper.getNumberCells(cells).size());
     }
 
     @Test

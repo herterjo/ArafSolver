@@ -1,5 +1,7 @@
 package dataHelper;
 
+import java.util.Objects;
+
 public class Tuple<K, V> implements ICopyable<Tuple<K, V>> {
     private K key;
     private V value;
@@ -27,6 +29,20 @@ public class Tuple<K, V> implements ICopyable<Tuple<K, V>> {
 
     public Tuple<K, V> copy() {
         return new Tuple<>(key, value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Tuple<?, ?> tuple = (Tuple<?, ?>) o;
+        return Objects.equals(key, tuple.key) &&
+                Objects.equals(value, tuple.value);
     }
 
     @Override

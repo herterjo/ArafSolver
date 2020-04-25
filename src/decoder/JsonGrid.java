@@ -22,12 +22,8 @@ public class JsonGrid {
         lenY = 0;
     }
 
-    public Grid getGrid(){
+    public Grid getGrid() {
         return getGrid(Grid::new);
-    }
-
-    public DrawableGrid getDrawableGrid(Stage stage){
-        return (DrawableGrid) getGrid((x,y) -> new DrawableGrid(x,y, stage));
     }
 
     private Grid getGrid(GridConstructor gc) {
@@ -59,5 +55,9 @@ public class JsonGrid {
             grid.setNumberCell(x, y, number);
         }
         return grid;
+    }
+
+    public DrawableGrid getDrawableGrid(Stage stage) {
+        return (DrawableGrid) getGrid((x, y) -> new DrawableGrid(x, y, stage));
     }
 }

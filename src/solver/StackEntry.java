@@ -8,14 +8,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class StackEntry {
-    private final Map<Point, ReverseFunc> possibilities;
-    private Tuple<Point, ReverseFunc> lastPoppedReverse;
-    private final List<Point> order;
     private final static ReverseFunc nop = p -> {
     };
+    private final Map<Point, ReverseFunc> possibilities;
+    private final List<Point> order;
     private final StepType stepType;
     private final Point origin;
     private final Point target;
+    private Tuple<Point, ReverseFunc> lastPoppedReverse;
 
     public StackEntry(Map<Point, ReverseFunc> possibilities, List<Point> order,
                       StepType stepType, Point origin, Point target) {
@@ -40,6 +40,10 @@ public class StackEntry {
         }
     }
 
+    public static ReverseFunc getNop() {
+        return nop;
+    }
+
     public StepType getStepType() {
         return stepType;
     }
@@ -50,10 +54,6 @@ public class StackEntry {
 
     public Point getTarget() {
         return target;
-    }
-
-    public int size() {
-        return possibilities.size();
     }
 
     public Point pop() {
@@ -70,8 +70,8 @@ public class StackEntry {
         return key;
     }
 
-    public static ReverseFunc getNop() {
-        return nop;
+    public int size() {
+        return possibilities.size();
     }
 
     @Override

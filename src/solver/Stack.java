@@ -3,9 +3,7 @@ package solver;
 
 import dataHelper.IllegalGridStateException;
 import dataHelper.Point;
-import dataHelper.Tuple;
 
-import java.security.cert.CollectionCertStoreParameters;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,13 +17,13 @@ public class Stack {
     }
 
     public void push(List<Point> possibilities, ReverseFunc r, StepType stepType, Point origin, Point target) {
-        var map = possibilities.stream().collect(Collectors.toMap(p -> p, p->r));
+        var map = possibilities.stream().collect(Collectors.toMap(p -> p, p -> r));
         push(map, possibilities, stepType, origin, target);
     }
 
     public void push(Map<Point, ReverseFunc> possibilities, List<Point> order, StepType stepType, Point origin, Point target) {
         var entry = new StackEntry(possibilities, order, stepType, origin, target);
-        push(entry);;
+        push(entry);
     }
 
     public void push(StackEntry entry) {
@@ -38,10 +36,6 @@ public class Stack {
         entries.push(entry);
     }
 
-    public int size() {
-        return entries.size();
-    }
-
     public Point popPossibility() {
         if (size() < 1) {
             return null;
@@ -49,15 +43,19 @@ public class Stack {
         return entries.getFirst().pop();
     }
 
+    public int size() {
+        return entries.size();
+    }
+
     public EntryContainer popEntry() {
         if (entries.getFirst().size() > 0) {
             throw new IllegalGridStateException("There are left possibilities in the current stack entry");
         }
-        if(size() < 1){
+        if (size() < 1) {
             return null;
         }
         entries.pop();
-        if(size() < 1){
+        if (size() < 1) {
             return null;
         }
         var nextEntry = entries.getFirst();

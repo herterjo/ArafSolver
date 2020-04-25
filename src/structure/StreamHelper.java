@@ -24,10 +24,6 @@ public abstract class StreamHelper {
         return cells.filter(Cell::isNumberCell).collect(Collectors.toList());
     }
 
-    public static Stream<Cell> getNumberCellsToStream(Stream<Cell> cells) {
-        return cells.filter(Cell::isNumberCell);
-    }
-
     public static Tuple<Integer, Integer> getMinMaxNumbers(List<Cell> cells) {
         return getMinMaxNumbers(cells.stream());
     }
@@ -38,6 +34,10 @@ public abstract class StreamHelper {
         var max = Math.max(numbers.get(0), numbers.get(1));
         var min = Math.min(numbers.get(0), numbers.get(1));
         return new Tuple<>(min, max);
+    }
+
+    public static Stream<Cell> getNumberCellsToStream(Stream<Cell> cells) {
+        return cells.filter(Cell::isNumberCell);
     }
 
     public static List<Cell> getNotInGroups(List<Cell> cells) {
@@ -60,12 +60,12 @@ public abstract class StreamHelper {
         return getCopy(copyable.stream());
     }
 
-    public static <C extends ICopyable<C>> List<C> getCopy(Set<C> cells) {
-        return getCopy(cells.stream());
-    }
-
     public static <C extends ICopyable<C>> List<C> getCopy(Stream<C> copyable) {
         return copyable.map(ICopyable::copy).collect(Collectors.toList());
+    }
+
+    public static <C extends ICopyable<C>> List<C> getCopy(Set<C> cells) {
+        return getCopy(cells.stream());
     }
 
     public static <T> List<T> getFlatMap(List<List<T>> toflatten) {

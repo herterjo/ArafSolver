@@ -14,8 +14,8 @@ import javafx.stage.Stage;
 import structure.Grid;
 
 public class DrawableGrid extends Grid {
-    private final Rectangle[][] rects;
     private static final int size = 50;
+    private final Rectangle[][] rects;
     private final Stage stage;
     private boolean doDraw;
 
@@ -51,15 +51,15 @@ public class DrawableGrid extends Grid {
     }
 
     @Override
-    public void setCellGroup(int posX, int posY, structure.Group group) {
-        super.setCellGroup(posX, posY, group);
-        update(posX, posY, group.getId());
-    }
-
-    @Override
     public void setCellGroup(Point p, structure.Group group) {
         super.setCellGroup(p, group);
         update(p.getX(), p.getY(), group.getId());
+    }
+
+    @Override
+    public void setCellGroup(int posX, int posY, structure.Group group) {
+        super.setCellGroup(posX, posY, group);
+        update(posX, posY, group.getId());
     }
 
     @Override
@@ -72,21 +72,6 @@ public class DrawableGrid extends Grid {
     public void deleteCellFromGroup(int posX, int posY) {
         super.deleteCellFromGroup(posX, posY);
         update(posX, posY, null);
-    }
-
-    public void setDraw(boolean doDraw) {
-        this.doDraw = doDraw;
-    }
-
-    public void updateAll() {
-        if (!doDraw) {
-            return;
-        }
-        for (var cellRow : cells) {
-            for (var cell : cellRow) {
-                update(cell.getPosX(), cell.getPosY(), cell.getGroup().getId());
-            }
-        }
     }
 
     private void update(int posX, int posY, Integer groupId) {
@@ -115,5 +100,20 @@ public class DrawableGrid extends Grid {
                 Platform.runLater(() -> rect.setFill(Color.TRANSPARENT));
             }
         }).start();
+    }
+
+    public void setDraw(boolean doDraw) {
+        this.doDraw = doDraw;
+    }
+
+    public void updateAll() {
+        if (!doDraw) {
+            return;
+        }
+        for (var cellRow : cells) {
+            for (var cell : cellRow) {
+                update(cell.getPosX(), cell.getPosY(), cell.getGroup().getId());
+            }
+        }
     }
 }

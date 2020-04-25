@@ -13,23 +13,25 @@ import java.util.stream.Collectors;
 
 public class Backtracking {
     private final Grid grid;
-    private Point targetNumPoint;
-    private Point originNumPoint;
     private final Stack stack;
     private final ReverseFunc deleteGroupFromCellFunc;
     private final List<Point> numberPoints;
-    private StepType stepType;
     private final int neededGroupsCount;
-    private final List<Integer> pastGridHashCodes;
+    private final List<Integer> pastGridStatusCodes;
+    private Point targetNumPoint;
+    private Point originNumPoint;
+    private StepType stepType;
+    private int stepsCount;
 
     public Backtracking(Grid grid) {
         if (grid == null) {
             throw new IllegalArgumentException("grid can't be null");
         }
+        this.stepsCount = 0;
         this.grid = grid;
         this.targetNumPoint = null;
         this.originNumPoint = null;
-        this.pastGridHashCodes = new LinkedList<>();
+        this.pastGridStatusCodes = new LinkedList<>();
 
         deleteGroupFromCellFunc = grid::deleteCellFromGroup;
         stepType = StepType.AddGroup;
@@ -80,7 +82,11 @@ public class Backtracking {
         stack.push(p, f, s, originNumPoint, targetNumPoint);
     }
 
-    public boolean Step(){
+    public int getStepsCount() {
+        return stepsCount;
+    }
+
+    public boolean Step() {
         return Step(false);
     }
 
@@ -110,13 +116,14 @@ public class Backtracking {
                 solvedPartially = fillMax(poppedPossibility);
                 break;
         }
-        if(!recursiveWithoutChange) {
-            var currentGridHashCode = grid.hashCode();
-            if (pastGridHashCodes.contains(currentGridHashCode)) {
+        if (!recursiveWithoutChange) {
+            var currentGridHashCode = grid.getStatusCode();
+            if (pastGridStatusCodes.contains(currentGridHashCode)) {
                 return Step(false);
             } else {
-                pastGridHashCodes.add(currentGridHashCode);
+                pastGridStatusCodes.add(currentGridHashCode);
             }
+            stepsCount++;
         }
         return solvedPartially && grid.isAllCellsInGroups().getKey() && grid.validateAll();
     }
@@ -202,7 +209,7 @@ public class Backtracking {
                         .distinct().collect(Collectors.toList());
             }
             nextPossibilities = nextPossibilities.stream()
-                    .filter(p -> grid.isFloodFillAcceptable(p, max-groupCellCount-2, targetNumPoint, false))
+                    .filter(p -> grid.isFloodFillAcceptable(p, max - groupCellCount - 2, targetNumPoint, false))
                     .collect(Collectors.toList());
             //A*
             nextPossibilities.sort(Comparator.comparing(p -> Math.abs(p.getX() - targetNumPoint.getX())
@@ -280,9 +287,9 @@ public class Backtracking {
             targetNumPoint = newPoints.get(1).getPos();
             var newMax = Math.max(newPoints.get(0).getNumber(), newPoints.get(1).getNumber());
             nextPossibilities = nextPossibilities.stream()
-                    .filter(p -> grid.isFloodFillAcceptable(p, newMax-groupCellCount-2, targetNumPoint, true))
+                    .filter(p -> grid.isFloodFillAcceptable(p, newMax - groupCellCount - 2, targetNumPoint, true))
                     .collect(Collectors.toList());
-            if(nextPossibilities.size() > 0) {
+            if (nextPossibilities.size() > 0) {
                 pushOnStack(nextPossibilities, deleteGroupFromCellFunc, StepType.FillMax);
             }
             return Step(true);

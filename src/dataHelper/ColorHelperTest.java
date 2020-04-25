@@ -1,6 +1,5 @@
 package dataHelper;
 
-import dataHelper.ColorHelper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

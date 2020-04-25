@@ -25,6 +25,10 @@ public class Cell implements ICopyable<Cell> {
         this.number = number;
     }
 
+    public Point getPos() {
+        return new Point(getPosX(), getPosY());
+    }
+
     public int getPosX() {
         return posX;
     }
@@ -33,16 +37,8 @@ public class Cell implements ICopyable<Cell> {
         return posY;
     }
 
-    public Point getPos() {
-        return new Point(getPosX(), getPosY());
-    }
-
-    public structure.Group getGroup() {
-        return group;
-    }
-
-    public void setGroup(structure.Group group) {
-        this.group = group;
+    public boolean isNumberCell() {
+        return getNumber() != null;
     }
 
     public Integer getNumber() {
@@ -56,12 +52,16 @@ public class Cell implements ICopyable<Cell> {
         this.number = number;
     }
 
-    public boolean isNumberCell() {
-        return getNumber() != null;
-    }
-
     public boolean isGroupCell() {
         return getGroup() != null;
+    }
+
+    public structure.Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(structure.Group group) {
+        this.group = group;
     }
 
     public void deleteNumber() {
@@ -73,8 +73,8 @@ public class Cell implements ICopyable<Cell> {
     }
 
     @Override
-    public String toString() {
-        return "(" + posX + "," + posY + "), gr: " + group;
+    public int hashCode() {
+        return Objects.hash(posX, posY, group, number);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class Cell implements ICopyable<Cell> {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(posX, posY, group, number);
+    public String toString() {
+        return "(" + posX + "," + posY + "), gr: " + group;
     }
 }
