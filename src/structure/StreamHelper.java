@@ -5,8 +5,12 @@ import dataHelper.Point;
 import dataHelper.Tuple;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,7 +60,7 @@ public abstract class StreamHelper {
         return getCopy(copyable.stream());
     }
 
-        public static <C extends ICopyable<C>> List<C> getCopy(Set<C> cells) {
+    public static <C extends ICopyable<C>> List<C> getCopy(Set<C> cells) {
         return getCopy(cells.stream());
     }
 
@@ -90,5 +94,12 @@ public abstract class StreamHelper {
 
     public static <T> boolean hasNull(Stream<T> toCheck) {
         return toCheck.anyMatch(Objects::isNull);
+    }
+
+    public static <T> Predicate<T> distinctByKey(
+            Function<? super T, ?> keyExtractor) {
+
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 }

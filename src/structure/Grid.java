@@ -8,13 +8,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Grid {
-    //TODO: Hashcode
+    // is no color from color helper
+    public static final Group floodFillGroup = new Group(16777216);
     protected static final int numberCellsInGroup = 2;
     protected static final List<Point> searchPattern = Arrays.asList(
             new Point(1, 0),
             new Point(-1, 0),
             new Point(0, 1),
             new Point(0, -1)
+    );
+    protected static final List<Point> floodFillModifier = Arrays.asList(
+            new Point(1, 1),
+            new Point(-1, -1),
+            new Point(-1, 1),
+            new Point(1, -1)
     );
     // First vertical, then horizontal
     protected final List<List<Cell>> cells;
@@ -52,6 +59,10 @@ public class Grid {
     }
 
     public void setCellGroup(int posX, int posY, Group group) {
+        setCellGroupPrivate(posX, posY, group);
+    }
+
+    private void setCellGroupPrivate(int posX, int posY, Group group) {
         if (group == null) {
             throw new IllegalArgumentException("Group can't be null");
         }
@@ -75,22 +86,28 @@ public class Grid {
         cell.setGroup(group);
     }
 
-    public void deleteCellFromGroup(Point p){
+    public void deleteCellFromGroup(Point p) {
         deleteCellFromGroup(p.getX(), p.getY());
     }
 
     public void deleteCellFromGroup(int posX, int posY) {
+        deleteCellFromGroupPrivate(posX, posY, true);
+    }
+
+    public void deleteCellFromGroupPrivate(int posX, int posY, boolean check) {
         var cell = getCell(posX, posY);
         var oldGroup = cell.getGroup();
         if (oldGroup == null) {
             return;
         }
-        var adjacentPoints = getAdjacentPoints(posX, posY, oldGroup, false, false);
-        if (adjacentPoints.size() > 1) {
-            for (var adPoint : adjacentPoints) {
-                if (getAdjacentPoints(adPoint.getX(), adPoint.getY(), oldGroup, false, false)
-                        .size() < 2) {
-                    throw new IllegalArgumentException("The adjacent cell " + adPoint + " would be cut off");
+        if (check) {
+            var adjacentPoints = getAdjacentPoints(posX, posY, oldGroup, false, false);
+            if (adjacentPoints.size() > 1) {
+                for (var adPoint : adjacentPoints) {
+                    if (getAdjacentPoints(adPoint.getX(), adPoint.getY(), oldGroup, false, false)
+                            .size() < 2) {
+                        throw new IllegalArgumentException("The adjacent cell " + adPoint + " would be cut off");
+                    }
                 }
             }
         }
@@ -271,17 +288,114 @@ public class Grid {
         return true;
     }
 
-    public int getGroupsCount(){
+    public int getGroupsCount() {
         return groups.size();
     }
 
-    public List<Group> getGroupsCopy(){
+    public List<Group> getGroupsCopy() {
         return StreamHelper.getCopy(groups.keySet());
     }
 
-    public int getGroupCellCount(Group group){return groups.get(group).size();}
+    public int getGroupCellCount(Group group) {
+        return groups.get(group).size();
+    }
 
-    public List<Cell> getCellsInGroup(Group g){
+    public List<Cell> getCellsInGroup(Group g) {
         return StreamHelper.getCopy(groups.get(g));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Grid grid = (Grid) o;
+        return Objects.equals(cells, grid.cells);
+    }
+
+    @Override
+    public int hashCode() {
+        return cells.hashCode();
+    }
+
+    public boolean isFloodFillAcceptable(Point p, Integer maxFloodedAcceptable, Point exclude, boolean checkOtherNumsMax) {
+        setCellGroupPrivate(p.getX(), p.getY(), Grid.floodFillGroup);
+        var maxNull = maxFloodedAcceptable == null;
+        var originalToFloodPoints = getAdjacentPoints(p, null, true, false);
+        for (var mod : floodFillModifier) {
+            var newX = p.getX() + mod.getX();
+            var newY = p.getY() + mod.getY();
+            if (this.isIndexInValid(newX, newY)) {
+                continue;
+            }
+            var diagCell = getCell(newX, newY);
+            if (diagCell.isGroupCell()) {
+                continue;
+            }
+            var diagAdj = getAdjacentPoints(diagCell.getPos(), null, true, false);
+            var cut = originalToFloodPoints.stream().filter(diagAdj::contains).collect(Collectors.toList());
+            if (cut.size() > 1) {
+                // both are reachable with floodfill, so remove one
+                originalToFloodPoints.remove(cut.get(0));
+            }
+        }
+        var valid = true;
+        for (var ofp : originalToFloodPoints) {
+            var flooded = floodFill(ofp, true).stream()
+                    .filter(fp -> !fp.equals(exclude))
+                    .map(fp -> getCell(fp.getX(), fp.getY())).collect(Collectors.toList());
+            var floodedCount = flooded.size();
+            var floodedNums = StreamHelper.getNumberCells(flooded);
+            var floodedNumsCount = floodedNums.size();
+            var flNumCtLess1 = floodedNumsCount < 1;
+            if (maxNull && flNumCtLess1) {
+                continue;
+            }
+            if (!maxNull && flNumCtLess1) {
+                if (floodedCount <= maxFloodedAcceptable) {
+                    continue;
+                }
+                valid = false;
+                break;
+            }
+            if (floodedNumsCount % 2 != 0) {
+                valid = false;
+                break;
+            }
+            var floodedNumsNumbers = floodedNums.stream().map(Cell::getNumber).collect(Collectors.toList());
+            if (checkOtherNumsMax) {
+                var max = floodedNumsNumbers.stream().max(Comparator.comparing(n -> n)).orElse(null);
+                if (max != null && floodedCount >= max) {
+                    valid = false;
+                    break;
+                }
+            }
+            var min = floodedNumsNumbers.stream().min(Comparator.comparing(n -> n)).orElse(null);
+            if (min != null && floodedCount <= min) {
+                valid = false;
+                break;
+            }
+        }
+        deleteCellFromGroupPrivate(p.getX(), p.getY(), false);
+        return valid;
+    }
+
+    private List<Point> floodFill(Point p, boolean first) {
+        var floodedPoints = new LinkedList<>(Collections.singletonList(p));
+        if (first) {
+            setCellGroupPrivate(p.getX(), p.getY(), floodFillGroup);
+        }
+        var toFloodPoints = getAdjacentPoints(p, null, true, false);
+        for (var tfp : toFloodPoints) {
+            setCellGroupPrivate(tfp.getX(), tfp.getY(), floodFillGroup);
+        }
+        for (var tfp : toFloodPoints) {
+            floodedPoints.addAll(floodFill(tfp, false));
+        }
+        if (first) {
+            for (var fp : floodedPoints) {
+                deleteCellFromGroupPrivate(fp.getX(), fp.getY(), false);
+            }
+        }
+        return floodedPoints;
     }
 }

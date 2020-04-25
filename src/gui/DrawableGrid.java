@@ -15,18 +15,18 @@ import structure.Grid;
 
 public class DrawableGrid extends Grid {
     private final Rectangle[][] rects;
-    private final int timeout;
     private static final int size = 50;
     private final Stage stage;
+    private boolean doDraw;
 
-    public DrawableGrid(int lenX, int lenY, Stage stage, int timeout) {
+    public DrawableGrid(int lenX, int lenY, Stage stage) {
         super(lenX, lenY);
-        this.timeout = timeout;
         rects = new Rectangle[lenY][lenX];
         this.stage = stage;
     }
 
     public void init() {
+        doDraw = true;
         var fxGroup = new Group();
         for (int y = 0; y < lenY; y++) {
             for (int x = 0; x < lenX; x++) {
@@ -74,11 +74,24 @@ public class DrawableGrid extends Grid {
         update(posX, posY, null);
     }
 
+    public void setDraw(boolean doDraw) {
+        this.doDraw = doDraw;
+    }
+
+    public void updateAll() {
+        if (!doDraw) {
+            return;
+        }
+        for (var cellRow : cells) {
+            for (var cell : cellRow) {
+                update(cell.getPosX(), cell.getPosY(), cell.getGroup().getId());
+            }
+        }
+    }
+
     private void update(int posX, int posY, Integer groupId) {
-        try {
-            Thread.sleep(timeout);
-        } catch (Exception ex) {
-            System.out.println(ex.toString());
+        if (!doDraw) {
+            return;
         }
         new Thread(() -> {
             var rect = rects[posY][posX];
@@ -91,12 +104,12 @@ public class DrawableGrid extends Grid {
                     for (byte colorByte : colorBytes) {
                         added += colorByte;
                     }
-                }while(added < (-196*3) || added > (196*3));
+                } while (added < (-196 * 3) || added > (196 * 3));
                 var bytesCopyBecauseOfFinal = colorBytes;
                 Platform.runLater(
                         () -> rect.setFill(Color.rgb(bytesCopyBecauseOfFinal[0]
-                                        + 128, bytesCopyBecauseOfFinal[1]
-                                        + 128, bytesCopyBecauseOfFinal[2] + 128)
+                                + 128, bytesCopyBecauseOfFinal[1]
+                                + 128, bytesCopyBecauseOfFinal[2] + 128)
                         ));
             } else {
                 Platform.runLater(() -> rect.setFill(Color.TRANSPARENT));

@@ -11,7 +11,8 @@ public class StackEntry {
     private final Map<Point, ReverseFunc> possibilities;
     private Tuple<Point, ReverseFunc> lastPoppedReverse;
     private final List<Point> order;
-    private final static ReverseFunc nop = p -> {};
+    private final static ReverseFunc nop = p -> {
+    };
     private final StepType stepType;
     private final Point origin;
     private final Point target;
@@ -30,9 +31,9 @@ public class StackEntry {
         //Maybe a copy of indiviual object is needed
         this.possibilities = new HashMap<>(possibilities);
         lastPoppedReverse = new Tuple<>(null, nop);
-        if(order == null){
+        if (order == null) {
             this.order = keys;
-        }else{
+        } else {
             keys = keys.stream().filter(p -> !order.contains(p)).collect(Collectors.toList());
             order.addAll(keys);
             this.order = new LinkedList<>(order);
@@ -71,5 +72,10 @@ public class StackEntry {
 
     public static ReverseFunc getNop() {
         return nop;
+    }
+
+    @Override
+    public String toString() {
+        return "size: " + size();
     }
 }

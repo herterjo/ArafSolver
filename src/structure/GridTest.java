@@ -249,4 +249,40 @@ class GridTest {
         assertFalse(aPoints.contains(new Point(0,0)));
         assertTrue(aPoints.contains(new Point(1,1)));
     }
+
+    @Test
+    void hashCodeTest(){
+        var grid1 = getValidGrid();
+        var grid2 = getValidGrid();
+        assertEquals(grid1.hashCode(), grid2.hashCode());
+        grid1.setCellGroup(0,0, new Group(6345));
+        assertNotEquals(grid1.hashCode(), grid2.hashCode());
+        grid1= getValidGrid();
+        grid1.setNumberCell(0,0,1234);
+        assertNotEquals(grid1.hashCode(), grid2.hashCode());
+    }
+
+    @Test
+    void floodFill(){
+        var grid = new Grid(4,4);
+        var gr1 = getGroup1();
+        var gr2 = getGroup2();
+        grid.setCellGroup(2, 0, gr1);
+        grid.setCellGroup(2, 1, gr1);
+        grid.setCellGroup(2, 2, gr1);
+        grid.setCellGroup(2, 3, gr1);
+        grid.setCellGroup(0, 0, gr2);
+        assertTrue(grid.isFloodFillAcceptable(new Point(0,0), 6, new Point(0,1), true));
+        assertFalse(grid.isFloodFillAcceptable(new Point(0,0), 6, null, true));
+        assertFalse(grid.isFloodFillAcceptable(new Point(0,0), 5, new Point(0,1), true));
+        grid.deleteCellFromGroup(0,0);
+        grid.setNumberCell(0,2, 1);
+        grid.setNumberCell(0,1, 9);
+        assertTrue(grid.isFloodFillAcceptable(new Point(2,0), 4, null, true));
+        assertTrue(grid.isFloodFillAcceptable(new Point(2,0), 4, null, false));
+        grid.setNumberCell(0,2, 1);
+        grid.setNumberCell(0,1, 3);
+        assertFalse(grid.isFloodFillAcceptable(new Point(2,0), 4, null, true));
+        assertTrue(grid.isFloodFillAcceptable(new Point(2,0), 4, null, false));
+    }
 }

@@ -52,10 +52,13 @@ public class Main extends Application {
                     ke.consume();
                     break;
                 case F6:
+                    grid.setDraw(false);
                     Boolean solved = false;
                     while (solved != null && !solved) {
                         solved = Step();
                     }
+                    grid.setDraw(true);
+                    grid.updateAll();
                     ke.consume();
                     break;
             }
@@ -81,7 +84,7 @@ public class Main extends Application {
             if (db.hasFiles()) {
                 var path = db.getFiles().get(0);
                 try {
-                    grid = GridDecoder.getJsonDrawableGridFromFile(path.getPath(), stage, 100);
+                    grid = GridDecoder.getJsonDrawableGridFromFile(path.getPath(), stage);
                     solver = new Backtracking(grid);
                     success = true;
                 } catch (Exception e) {

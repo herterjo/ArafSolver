@@ -63,4 +63,9 @@ public class Stack {
         var nextEntry = entries.getFirst();
         return new EntryContainer(nextEntry.getStepType(), nextEntry.getOrigin(), nextEntry.getTarget());
     }
+
+    @Override
+    public String toString() {
+        return "size: " + size();
+    }
 }

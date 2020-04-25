@@ -26,8 +26,8 @@ public class JsonGrid {
         return getGrid(Grid::new);
     }
 
-    public DrawableGrid getDrawableGrid(Stage stage, int timout){
-        return (DrawableGrid) getGrid((x,y) -> new DrawableGrid(x,y, stage, timout));
+    public DrawableGrid getDrawableGrid(Stage stage){
+        return (DrawableGrid) getGrid((x,y) -> new DrawableGrid(x,y, stage));
     }
 
     private Grid getGrid(GridConstructor gc) {

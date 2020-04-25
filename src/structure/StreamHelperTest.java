@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -74,5 +75,21 @@ class StreamHelperTest {
         var l2 = Arrays.asList(1, 2, 3, 4, 5);
         assertTrue(() -> StreamHelper.hasNull(l1));
         assertFalse(() -> StreamHelper.hasNull(l2));
+    }
+
+    @Test
+    void distinctByKey() {
+        List<Point> personListFiltered = new ArrayList<>(Arrays.asList(
+                new Point(1, 2),
+                new Point(2, 2),
+                new Point(3, 2),
+                new Point(1, 1),
+                new Point(1, 3))).stream()
+                .filter(StreamHelper.distinctByKey(Point::getX))
+                .collect(Collectors.toList());
+        assertEquals(3, personListFiltered.size());
+        assertTrue(personListFiltered.contains(new Point(2, 2)));
+        assertTrue(personListFiltered.contains(new Point(3, 2)));
+        assertEquals(1, personListFiltered.stream().filter(p -> p.getX() == 1).count());
     }
 }

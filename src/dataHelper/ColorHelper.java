@@ -7,8 +7,13 @@ public abstract class ColorHelper {
     private static final Random rand = new Random();
 
     public static byte[] getRandomColor() {
-        var bytes = new byte[3];
-        rand.nextBytes(bytes);
+        var bytes = new byte[]{0,0,0};
+        int c;
+        do {
+            rand.nextBytes(bytes);
+            c = colorToInt(bytes);
+        }while(intToColor(c).length != 3);
+        //checking, because there coukld arise a problem
         return bytes;
     }
 
