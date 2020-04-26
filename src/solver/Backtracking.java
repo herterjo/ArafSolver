@@ -94,10 +94,10 @@ public class Backtracking {
         var poppedPossibility = stack.popPossibility();
         //backtrack
         while (poppedPossibility == null) {
+            var lastVars = stack.popEntry();
             if (stack.size() < 1) {
                 throw new IllegalGridStateException("grid can't be solved");
             }
-            var lastVars = stack.popEntry();
             this.stepType = lastVars.getStepType();
             this.originNumPoint = lastVars.getOrigin();
             this.targetNumPoint = lastVars.getTarget();

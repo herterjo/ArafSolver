@@ -18,6 +18,7 @@ public class DrawableGrid extends Grid {
     private final Rectangle[][] rects;
     private final Stage stage;
     private boolean doDraw;
+    private final static Color noGroupColor = Color.TRANSPARENT;
 
     public DrawableGrid(int lenX, int lenY, Stage stage) {
         super(lenX, lenY);
@@ -97,7 +98,7 @@ public class DrawableGrid extends Grid {
                                 + 128, bytesCopyBecauseOfFinal[2] + 128)
                         ));
             } else {
-                Platform.runLater(() -> rect.setFill(Color.TRANSPARENT));
+                Platform.runLater(() -> rect.setFill(noGroupColor));
             }
         }).start();
     }
@@ -112,7 +113,9 @@ public class DrawableGrid extends Grid {
         }
         for (var cellRow : cells) {
             for (var cell : cellRow) {
-                update(cell.getPosX(), cell.getPosY(), cell.getGroup().getId());
+                var group = cell.getGroup();
+                Integer groupId = group == null ? null : group.getId();
+                update(cell.getPosX(), cell.getPosY(), groupId);
             }
         }
     }

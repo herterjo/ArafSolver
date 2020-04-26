@@ -1,0 +1,8 @@
+{"numberCells":[
+{"key":{"y":0,"x":0},"value":6},
+{"key":{"y":0,"x":1},"value":8},
+{"key":{"y":0,"x":2},"value":6},
+{"key":{"y":0,"x":3},"value":8},
+{"key":{"y":1,"x":0},"value":6},
+{"key":{"y":1,"x":1},"value":16},
+],"lenX":4,"lenY":4}
