@@ -351,8 +351,8 @@ public class Grid {
                     .filter(fp -> !fp.equals(exclude))
                     .map(fp -> getCell(fp.getX(), fp.getY())).collect(Collectors.toList());
             var floodedCount = flooded.size();
-            var floodedNums = StreamHelper.getNumberCells(flooded);
-            var floodedNumsCount = floodedNums.size();
+            var floodedNumCells = StreamHelper.getNumberCells(flooded);
+            var floodedNumsCount = floodedNumCells.size();
             var flNumCtLess1 = floodedNumsCount < 1;
             if (maxNull && flNumCtLess1) {
                 continue;
@@ -368,19 +368,27 @@ public class Grid {
                 valid = false;
                 break;
             }
-            var floodedNumsNumbers = floodedNums.stream().map(Cell::getNumber).collect(Collectors.toList());
+            var floodedNumsNumbers = floodedNumCells.stream().map(Cell::getNumber)
+                    .sorted(Comparator.comparing(n -> n)).collect(Collectors.toList());
+            var min = 0;
+            for (var i = 0; i < floodedNumsCount / 2; i++) {
+                min += floodedNumsNumbers.get(i) + 1;
+            }
+            if (floodedCount < min) {
+                valid = false;
+                break;
+            }
             if (checkOtherNumsMax) {
-                var max = floodedNumsNumbers.stream().max(Comparator.comparing(n -> n)).orElse(null);
-                if (max != null && floodedCount >= max) {
+                var max = 0;
+                for (var i = floodedNumsCount / 2; i < floodedNumsCount; i++) {
+                    max += floodedNumsNumbers.get(i) - 1;
+                }
+                if (floodedCount > max) {
                     valid = false;
                     break;
                 }
             }
-            var min = floodedNumsNumbers.stream().min(Comparator.comparing(n -> n)).orElse(null);
-            if (min != null && floodedCount <= min) {
-                valid = false;
-                break;
-            }
+
         }
         deleteCellFromGroupPrivate(p.getX(), p.getY(), false);
         return valid;
